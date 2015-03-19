@@ -1,5 +1,8 @@
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.File;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +12,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml3;
 
 public class Main {
 
@@ -20,13 +25,47 @@ public class Main {
 
 		ArrayList epicModules = getEpicModules(rubyFiles);
 		//log(epicModules);
-
+		
 		ArrayList<String> possibleMatches = getPossibleMatches(rubyFiles);
 
 		ArrayList<String> definiteMatches = removeModulesFromPossibleMatches(possibleMatches, epicModules);
 
 		log(definiteMatches);
+		
+		writeToDisk(definiteMatches);
 
+	}
+	
+	public static void writeToDisk(ArrayList<String> matches) throws IOException {
+		File fout = new File("out.html");
+		FileOutputStream fos = new FileOutputStream(fout);
+	 
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+	 
+		bw.write("<!DOCTYPE html>");
+		bw.write("<html lang=\"en\"");
+		bw.write("<head>");
+		bw.write("<meta charset=\"utf-8\">");
+		
+		bw.write("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+		bw.write("<title>Interfaces</title>");
+		bw.write("<style>body {font-weight:bold; font-size: 1.2em; } div{padding: 8px;} body div:nth-child(even) { background-color:#dddddd;}</style>");
+		
+		bw.write("</head>");
+		bw.write("<body>");
+		for (int i=0; i< matches.size(); i++) {
+			String match = matches.get(i);
+			String headerTag = "<div>";
+//			if(i%2==0){
+//				headerTag = "<div class=>";
+//			}
+			bw.write(headerTag+escapeHtml3(match)+"</div>");
+			//bw.newLine();
+		}
+		
+		bw.write("</body>");
+		bw.write("</html>");
+		bw.close();
 	}
 
 	private static ArrayList<String> removeModulesFromPossibleMatches(
@@ -52,7 +91,7 @@ public class Main {
 				}
 
 				if(keep && !matches.contains(possibleMatch)) {
-					matches.add(possibleMatch.substring(possibleMatch.indexOf("Epic::")));
+					matches.add(possibleMatch.substring(possibleMatch.indexOf("Epic::")));					
 				}
 			}
 		}
@@ -116,4 +155,5 @@ public class Main {
 		}				
 	}
 }
+
 
