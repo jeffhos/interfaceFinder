@@ -30,8 +30,6 @@ public class Main {
 
 		ArrayList<InterfaceImplementation> definiteMatches = removeModulesFromPossibleMatches(possibleMatches, epicModules);
 
-		//log(definiteMatches);
-
 		writeToDisk(definiteMatches);
 
 	}
@@ -127,15 +125,11 @@ public class Main {
 				}
 			}
 		}
-
 		return modules;
 	}
 
 	private static ArrayList<InterfaceImplementation> getPossibleMatches(Collection<File> rubyFiles) throws IOException {
-//		ArrayList<String> possibleMatches = new ArrayList<String>();	
-//		ArrayList<Integer> lineNumbers = new ArrayList<Integer>();	
-//		ArrayList<String> fileNames = new ArrayList<String>();
-		ArrayList<InterfaceImplementation> matches = new ArrayList<InterfaceImplementation>();
+		ArrayList<InterfaceImplementation> matches = new ArrayList<InterfaceImplementation>();		
 
 		for(File rubyFile : rubyFiles) {
 			String originalPath = rubyFile.getPath();
@@ -143,23 +137,12 @@ public class Main {
 			List<String> lines = FileUtils.readLines(rubyFile);
 			for(int i = 0; i < lines.size(); i++) {
 				String line = lines.get(i);
-				if(!line.contains("Epic::Error") && !line.contains("< Epic::") && !line.contains("Epic::Allergy") && !line.contains("Epic::Wrapper") && !line.contains("Epic::Interconnect.new") && !line.contains("Epic::STRUCTURES")){
-					int index = -1;
-					if(line.contains("Epic::")){
-						index = line.indexOf("Epic::");		
-					}
-					if(line.contains("GoldenKey::Epic")){
-						index = line.indexOf("GoldenKey::Epic");		
-					}					
-//					possibleMatches.add(line);
-//					lineNumbers.add(i + 1);
-//					fileNames.add(filePath);
-					
+				
+				if(InterfaceImplementation.lineIsAnInterfaceImplementation(line)){					
 					InterfaceImplementation ii = new InterfaceImplementation();
 					ii.LineNumber = i+1;
 					ii.FileName = filePath;
-					ii.Usage = line;
-					
+					ii.Usage = line;					
 					matches.add(ii);
 				}
 			}
@@ -176,5 +159,6 @@ public class Main {
 		}				
 	}
 }
+
 
 

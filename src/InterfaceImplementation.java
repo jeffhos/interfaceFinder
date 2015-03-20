@@ -1,5 +1,7 @@
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml3;
 
+import java.util.ArrayList;
+
 public class InterfaceImplementation implements Comparable<InterfaceImplementation>{
 	public String Usage;
 	public String FileName;
@@ -71,4 +73,23 @@ public class InterfaceImplementation implements Comparable<InterfaceImplementati
 	public int compareTo(InterfaceImplementation other) {
 		return this.getCleanName().compareTo(other.getCleanName());
 	}
+	public static boolean lineIsAnInterfaceImplementation(String line) {
+		ArrayList<String> stuffToIgnore = new ArrayList<String>();
+		stuffToIgnore.add("Epic::Error");
+		stuffToIgnore.add("< Epic::");
+		stuffToIgnore.add("Epic::Allergy");
+		stuffToIgnore.add("Epic::Wrapper");
+		stuffToIgnore.add("Epic::Interconnect.new");
+		stuffToIgnore.add("Epic::STRUCTURES");
+		//return !line.contains("Epic::Error") && !line.contains("< Epic::") && !line.contains("Epic::Allergy") && !line.contains("Epic::Wrapper") && !line.contains("Epic::Interconnect.new") && !line.contains("Epic::STRUCTURES");
+		
+		for(String ignore : stuffToIgnore) {
+			if(line.contains(ignore)){
+				return false;
+			}
+		}
+		return true;
+	}
 }
+
+
