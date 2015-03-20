@@ -1,7 +1,9 @@
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml3;
+
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.File;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,11 +11,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml3;
+//git push https://github.com/ICEDLEE337/interfaceFinder.git master
+
 
 public class Main {
 
@@ -24,82 +25,83 @@ public class Main {
 		Collection<File> rubyFiles = getRubyFiles(new File(path));
 
 		ArrayList epicModules = getEpicModules(rubyFiles);
-		//log(epicModules);
-		
-		ArrayList<String> possibleMatches = getPossibleMatches(rubyFiles);
 
-		ArrayList<String> definiteMatches = removeModulesFromPossibleMatches(possibleMatches, epicModules);
+		ArrayList<InterfaceImplementation> possibleMatches = getPossibleMatches(rubyFiles);
 
-		log(definiteMatches);
-		
+		ArrayList<InterfaceImplementation> definiteMatches = removeModulesFromPossibleMatches(possibleMatches, epicModules);
+
+		//log(definiteMatches);
+
 		writeToDisk(definiteMatches);
 
 	}
-	
-	public static void writeToDisk(ArrayList<String> matches) throws IOException {
+
+	public static void writeToDisk(ArrayList<InterfaceImplementation> matches) throws IOException {
 		File fout = new File("out.html");
 		FileOutputStream fos = new FileOutputStream(fout);
-	 
+
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-	 
+
 		bw.write("<!DOCTYPE html>");
 		bw.write("<html lang=\"en\"");
 		bw.write("<head>");
 		bw.write("<meta charset=\"utf-8\">");
-		
+
 		bw.write("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
 		bw.write("<title>Interfaces</title>");
-		bw.write("<style>body {font-weight:bold; font-size: 1.2em; } div{padding: 8px;} body div:nth-child(even) { background-color:#dddddd;}</style>");
-		
+		bw.write("<style>body {font-weight:bold; font-size: 1.2em; } div,td{padding: 8px;} table tr:nth-child(even) td{ background-color:#dddddd;}</style>");
+
 		bw.write("</head>");
-		bw.write("<body>");
+		bw.write("<body><table><tr><td>Interface Name</td><td>File Name</td><td>Line Number</td></tr>");
 		for (int i=0; i< matches.size(); i++) {
-			String match = matches.get(i);
-			String headerTag = "<div>";
-//			if(i%2==0){
-//				headerTag = "<div class=>";
-//			}
-			bw.write(headerTag+escapeHtml3(match)+"</div>");
+			InterfaceImplementation match = matches.get(i);
+			bw.write(match.getHtml());
 			//bw.newLine();
 		}
-		
-		bw.write("</body>");
+
+		bw.write("</table></body>");
 		bw.write("</html>");
 		bw.close();
 	}
 
-	private static ArrayList<String> removeModulesFromPossibleMatches(
-			ArrayList<String> possibleMatches, ArrayList<String> epicModules) {
-		ArrayList<String> matches = new ArrayList<String>();
-		for(String possibleMatch : possibleMatches) {
+	private static ArrayList<InterfaceImplementation> removeModulesFromPossibleMatches(
+			ArrayList<InterfaceImplementation> possibleMatches, ArrayList<String> epicModules) {
+		
+		ArrayList<InterfaceImplementation> matches = new ArrayList<InterfaceImplementation>();
+		
+		for(InterfaceImplementation possibleMatch : possibleMatches) {
 			boolean keep = true;
-			if(possibleMatch.contains("GoldenKey::Epic")){
-				matches.add(possibleMatch.substring(possibleMatch.indexOf("GoldenKey::Epic")));
+			if(possibleMatch.isGk()){
+				matches.add(possibleMatch);
 			}
 			else
 			{
+				if(possibleMatch.isEpic()){ 
+					//make sure it's not a class or module definition
+					for(String module : epicModules) {		
 
-				for(String module : epicModules) {		
+						String moduleInvocation = "Epic::"+module;
 
-					String moduleInvocation = "Epic::"+module;
-
-					if(possibleMatch.contains(moduleInvocation)) {
-						keep = false;	
-						break;
+						if(possibleMatch.Usage.contains(moduleInvocation)) {
+							keep = false;	
+							break;
+						}
 					}
 
+					if(keep && !matches.contains(possibleMatch)) {
+						matches.add(possibleMatch);											
+					}
 				}
-
-				if(keep && !matches.contains(possibleMatch)) {
-					matches.add(possibleMatch.substring(possibleMatch.indexOf("Epic::")));					
+				else {
+					//System.out.println("mismatch:" + possibleMatch.Usage);
 				}
-			}
+			}	
 		}
 
-		List<String> sub = matches.subList(1, matches.size());
+		List<InterfaceImplementation> sub = matches.subList(1, matches.size());
 		Collections.sort(sub);
 
-		return new ArrayList<String>(sub);
+		return new ArrayList<InterfaceImplementation>(sub);
 	}
 
 	private static Collection<File> getRubyFiles(File dir) {
@@ -129,22 +131,41 @@ public class Main {
 		return modules;
 	}
 
-	private static ArrayList<String> getPossibleMatches(Collection<File> rubyFiles) throws IOException {
-		ArrayList<String> possibleMatches = new ArrayList<String>();		
+	private static ArrayList<InterfaceImplementation> getPossibleMatches(Collection<File> rubyFiles) throws IOException {
+//		ArrayList<String> possibleMatches = new ArrayList<String>();	
+//		ArrayList<Integer> lineNumbers = new ArrayList<Integer>();	
+//		ArrayList<String> fileNames = new ArrayList<String>();
+		ArrayList<InterfaceImplementation> matches = new ArrayList<InterfaceImplementation>();
 
-		String originalPath = rubyFiles.iterator().next().getPath();
-		String filePath = originalPath.substring(originalPath.indexOf("engage6400"));
 		for(File rubyFile : rubyFiles) {
+			String originalPath = rubyFile.getPath();
+			String filePath = originalPath.substring(originalPath.indexOf("engage6400"));
 			List<String> lines = FileUtils.readLines(rubyFile);
 			for(int i = 0; i < lines.size(); i++) {
 				String line = lines.get(i);
-				if((line.contains("Epic::") || line.contains("GoldenKey::Epic"))  && !line.contains("Epic::Error") && !line.contains("< Epic::") && !line.contains("Epic::Allergy") && !line.contains("Epic::Wrapper") && !line.contains("Epic::Interconnect.new") && !line.contains("Epic::STRUCTURES")){
-					possibleMatches.add(line + " line " + (i + 1) + " in file: " + filePath);
+				if(!line.contains("Epic::Error") && !line.contains("< Epic::") && !line.contains("Epic::Allergy") && !line.contains("Epic::Wrapper") && !line.contains("Epic::Interconnect.new") && !line.contains("Epic::STRUCTURES")){
+					int index = -1;
+					if(line.contains("Epic::")){
+						index = line.indexOf("Epic::");		
+					}
+					if(line.contains("GoldenKey::Epic")){
+						index = line.indexOf("GoldenKey::Epic");		
+					}					
+//					possibleMatches.add(line);
+//					lineNumbers.add(i + 1);
+//					fileNames.add(filePath);
+					
+					InterfaceImplementation ii = new InterfaceImplementation();
+					ii.LineNumber = i+1;
+					ii.FileName = filePath;
+					ii.Usage = line;
+					
+					matches.add(ii);
 				}
 			}
 		}
 
-		return possibleMatches;
+		return matches;
 	}
 
 	private static void log(ArrayList<String> list) {
