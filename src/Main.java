@@ -1,13 +1,17 @@
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml3;
 
+import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -69,7 +73,7 @@ public class Main {
 			for(int i = 0; i < lines.size(); i++) {
 				String line = lines.get(i);
 
-				if(InterfaceImplementation.lineIsAnInterfaceImplementation(line)){					
+				if(InterfaceImplementation.lineIsAPossibleInterfaceImplementation(line)){					
 					InterfaceImplementation ii = new InterfaceImplementation();
 					ii.LineNumber = i+1;
 					ii.FileName = filePath;
@@ -122,7 +126,12 @@ public class Main {
 
 
 	public static void writeToDisk(ArrayList<InterfaceImplementation> matches) throws IOException {
-		File fout = new File("out.html");
+		Date date = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+		String formattedDate = sdf.format(date);
+		
+		String filename = "output/interfaces-"+formattedDate+".html";
+		File fout = new File(filename);
 		FileOutputStream fos = new FileOutputStream(fout);
 
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
@@ -141,12 +150,14 @@ public class Main {
 		for (int i=0; i< matches.size(); i++) {
 			InterfaceImplementation match = matches.get(i);
 			bw.write(match.getHtml());
-			//bw.newLine();
+			bw.newLine();
 		}
 
 		bw.write("</table></body>");
 		bw.write("</html>");
 		bw.close();
+		
+		Desktop.getDesktop().open(new File(filename));
 	}
 
 

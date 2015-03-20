@@ -89,7 +89,7 @@ public class InterfaceImplementation implements Comparable<InterfaceImplementati
 			return first;
 		}
 	}
-	public static boolean lineIsAnInterfaceImplementation(String line) {
+	public static boolean lineIsAPossibleInterfaceImplementation(String line) {
 		ArrayList<String> stuffToIgnore = new ArrayList<String>();
 		stuffToIgnore.add("Epic::Error");
 		stuffToIgnore.add("< Epic::");
@@ -98,7 +98,9 @@ public class InterfaceImplementation implements Comparable<InterfaceImplementati
 		stuffToIgnore.add("Epic::STRUCTURES");
 		stuffToIgnore.add("module_eval");
 		stuffToIgnore.add("respond_to");
-		stuffToIgnore.add("Epic.send");
+		//stuffToIgnore.add("Epic.send");
+		stuffToIgnore.add("Epic::<Something>");
+		stuffToIgnore.add("Epic::<Something>");		
 		
 		if(!(mIsGk(line) || mIsEpic(line))) {
 			return false;
