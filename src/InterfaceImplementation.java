@@ -8,8 +8,8 @@ public class InterfaceImplementation implements Comparable<InterfaceImplementati
 	public int LineNumber;
 	public String CleanName = "not set";
 
-	private String mGkString = "GoldenKey::Epic";
-	private String mEpicString = "Epic::";
+	private static String mGkString = "GoldenKey::Epic";
+	private static String mEpicString = "Epic::";
 
 	public String getUsage() {
 		return Usage;
@@ -45,19 +45,23 @@ public class InterfaceImplementation implements Comparable<InterfaceImplementati
 		}		
 
 		int parenIndex = CleanName.indexOf("(");
-		if(parenIndex >= 0) {
-			System.out.println(parenIndex);
-			System.out.println(CleanName);
+		if(parenIndex >= 0) {			
 			CleanName = CleanName.substring(0, parenIndex);
-			System.out.println(CleanName);
+			
 		}
 
 		return CleanName;
 	}
 	public boolean isGk() {
-		return Usage.indexOf(mGkString) >= 0;
+		return mIsGk(Usage);
 	}
 	public boolean isEpic() {
+		return mIsEpic(Usage);
+	}
+	private static boolean mIsGk(String Usage) {
+		return Usage.indexOf(mGkString) >= 0;
+	}
+	private static boolean mIsEpic(String Usage) {
 		return Usage.indexOf(mEpicString) >= 0;
 	}
 	public String getHtml() {
@@ -77,19 +81,26 @@ public class InterfaceImplementation implements Comparable<InterfaceImplementati
 		ArrayList<String> stuffToIgnore = new ArrayList<String>();
 		stuffToIgnore.add("Epic::Error");
 		stuffToIgnore.add("< Epic::");
-		stuffToIgnore.add("Epic::Allergy");
 		stuffToIgnore.add("Epic::Wrapper");
 		stuffToIgnore.add("Epic::Interconnect.new");
 		stuffToIgnore.add("Epic::STRUCTURES");
-		//return !line.contains("Epic::Error") && !line.contains("< Epic::") && !line.contains("Epic::Allergy") && !line.contains("Epic::Wrapper") && !line.contains("Epic::Interconnect.new") && !line.contains("Epic::STRUCTURES");
+		stuffToIgnore.add("module_eval");
+		stuffToIgnore.add("respond_to");
+		stuffToIgnore.add("Epic.send");
+		
+		if(!(mIsGk(line) || mIsEpic(line))) {
+			return false;
+		}
 		
 		for(String ignore : stuffToIgnore) {
 			if(line.contains(ignore)){
 				return false;
 			}
 		}
+		
 		return true;
 	}
 }
+
 
 

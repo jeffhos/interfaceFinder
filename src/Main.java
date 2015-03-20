@@ -24,7 +24,7 @@ public class Main {
 
 		Collection<File> rubyFiles = getRubyFiles(new File(path));
 
-		ArrayList epicModules = getEpicModules(rubyFiles);
+		ArrayList<String> epicModules = getEpicModules(rubyFiles);
 
 		ArrayList<InterfaceImplementation> possibleMatches = getPossibleMatches(rubyFiles);
 
@@ -34,80 +34,11 @@ public class Main {
 
 	}
 
-	public static void writeToDisk(ArrayList<InterfaceImplementation> matches) throws IOException {
-		File fout = new File("out.html");
-		FileOutputStream fos = new FileOutputStream(fout);
-
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-
-		bw.write("<!DOCTYPE html>");
-		bw.write("<html lang=\"en\"");
-		bw.write("<head>");
-		bw.write("<meta charset=\"utf-8\">");
-
-		bw.write("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-		bw.write("<title>Interfaces</title>");
-		bw.write("<style>body {font-weight:bold; font-size: 1.2em; } div,td{padding: 8px;} table tr:nth-child(even) td{ background-color:#dddddd;}</style>");
-
-		bw.write("</head>");
-		bw.write("<body><table><tr><td>Interface Name</td><td>File Name</td><td>Line Number</td></tr>");
-		for (int i=0; i< matches.size(); i++) {
-			InterfaceImplementation match = matches.get(i);
-			bw.write(match.getHtml());
-			//bw.newLine();
-		}
-
-		bw.write("</table></body>");
-		bw.write("</html>");
-		bw.close();
-	}
-
-	private static ArrayList<InterfaceImplementation> removeModulesFromPossibleMatches(
-			ArrayList<InterfaceImplementation> possibleMatches, ArrayList<String> epicModules) {
-		
-		ArrayList<InterfaceImplementation> matches = new ArrayList<InterfaceImplementation>();
-		
-		for(InterfaceImplementation possibleMatch : possibleMatches) {
-			boolean keep = true;
-			if(possibleMatch.isGk()){
-				matches.add(possibleMatch);
-			}
-			else
-			{
-				if(possibleMatch.isEpic()){ 
-					//make sure it's not a class or module definition
-					for(String module : epicModules) {		
-
-						String moduleInvocation = "Epic::"+module;
-
-						if(possibleMatch.Usage.contains(moduleInvocation)) {
-							keep = false;	
-							break;
-						}
-					}
-
-					if(keep && !matches.contains(possibleMatch)) {
-						matches.add(possibleMatch);											
-					}
-				}
-				else {
-					//System.out.println("mismatch:" + possibleMatch.Usage);
-				}
-			}	
-		}
-
-		List<InterfaceImplementation> sub = matches.subList(1, matches.size());
-		Collections.sort(sub);
-
-		return new ArrayList<InterfaceImplementation>(sub);
-	}
-
 	private static Collection<File> getRubyFiles(File dir) {
 		Collection<File> files = FileUtils.listFiles(
 				dir, 
 				new RubyFileFilter(),
-				TrueFileFilter.INSTANCE
-				);
+				TrueFileFilter.INSTANCE);
 
 		return files;
 	}
@@ -137,7 +68,7 @@ public class Main {
 			List<String> lines = FileUtils.readLines(rubyFile);
 			for(int i = 0; i < lines.size(); i++) {
 				String line = lines.get(i);
-				
+
 				if(InterfaceImplementation.lineIsAnInterfaceImplementation(line)){					
 					InterfaceImplementation ii = new InterfaceImplementation();
 					ii.LineNumber = i+1;
@@ -150,6 +81,74 @@ public class Main {
 
 		return matches;
 	}
+
+	private static ArrayList<InterfaceImplementation> removeModulesFromPossibleMatches(
+			ArrayList<InterfaceImplementation> possibleMatches, 
+			ArrayList<String> epicModules) {
+
+		ArrayList<InterfaceImplementation> matches = new ArrayList<InterfaceImplementation>();
+
+		for(InterfaceImplementation possibleMatch : possibleMatches) {
+			boolean keep = true;
+			if(possibleMatch.isGk()){
+				matches.add(possibleMatch);
+			}
+			else
+			{
+				if(possibleMatch.isEpic()){ 
+					//make sure it's not a class or module definition
+					for(String module : epicModules) {		
+
+						String moduleInvocation = "Epic::"+module;
+
+						if(possibleMatch.Usage.contains(moduleInvocation)) {
+							keep = false;	
+							break;
+						}
+					}
+
+					if(keep && !matches.contains(possibleMatch)) {
+						matches.add(possibleMatch);											
+					}
+				}				
+			}	
+		}
+
+		List<InterfaceImplementation> sub = matches.subList(1, matches.size());
+		Collections.sort(sub);
+
+		return new ArrayList<InterfaceImplementation>(sub);
+	}
+
+
+	public static void writeToDisk(ArrayList<InterfaceImplementation> matches) throws IOException {
+		File fout = new File("out.html");
+		FileOutputStream fos = new FileOutputStream(fout);
+
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+
+		bw.write("<!DOCTYPE html>");
+		bw.write("<html lang=\"en\"");
+		bw.write("<head>");
+		bw.write("<meta charset=\"utf-8\">");
+
+		bw.write("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+		bw.write("<title>Interfaces</title>");
+		bw.write("<style>body {font-weight:bold; font-size: 1.2em; } div,td{padding: 8px;} table tr:nth-child(even) td{ background-color:#dddddd;}</style>");
+
+		bw.write("</head>");
+		bw.write("<body><table><tr><td>Interface Name</td><td>File Name</td><td>Line Number</td></tr>");
+		for (int i=0; i< matches.size(); i++) {
+			InterfaceImplementation match = matches.get(i);
+			bw.write(match.getHtml());
+			//bw.newLine();
+		}
+
+		bw.write("</table></body>");
+		bw.write("</html>");
+		bw.close();
+	}
+
 
 	private static void log(ArrayList<String> list) {
 
