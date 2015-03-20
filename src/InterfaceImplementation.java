@@ -75,7 +75,19 @@ public class InterfaceImplementation implements Comparable<InterfaceImplementati
 	}
 	@Override
 	public int compareTo(InterfaceImplementation other) {
-		return this.getCleanName().compareTo(other.getCleanName());
+		int first = this.getCleanName().compareTo(other.getCleanName());
+		if(first==0) {
+			int second = this.FileName.compareTo(other.FileName);
+			if(second==0) {
+				return this.LineNumber == other.LineNumber ? 0 : (this.LineNumber > other.LineNumber ? 1 : -1);				
+			}
+			else {
+				return second;
+			}
+		}
+		else {
+			return first;
+		}
 	}
 	public static boolean lineIsAnInterfaceImplementation(String line) {
 		ArrayList<String> stuffToIgnore = new ArrayList<String>();
