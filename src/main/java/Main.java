@@ -23,19 +23,17 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 public class Main {
 
 	public static void main(String[] args) throws IOException {
-
-		String path = "/Users/lee/upmc/code/engage6400";		
-
-		Collection<File> rubyFiles = getRubyFiles(new File(path));
-
+	  if (args.length < 1) {
+	    System.err.println("Usage:");
+	    System.err.println("  interfaceFinder <source_dir>");
+	    System.exit(1);
+	  }
+		basePath = args[0];
+		Collection<File> rubyFiles = getRubyFiles(new File(basePath));
 		ArrayList<String> epicModules = getEpicModules(rubyFiles);
-
 		ArrayList<InterfaceImplementation> possibleMatches = getPossibleMatches(rubyFiles);
-
 		ArrayList<InterfaceImplementation> definiteMatches = removeModulesFromPossibleMatches(possibleMatches, epicModules);
-
 		writeToDisk(definiteMatches);
-
 	}
 
 	private static Collection<File> getRubyFiles(File dir) {
@@ -68,7 +66,7 @@ public class Main {
 
 		for(File rubyFile : rubyFiles) {
 			String originalPath = rubyFile.getPath();
-			String filePath = originalPath.substring(originalPath.indexOf("engage6400"));
+			String filePath = originalPath.replaceFirst(basePath, "");
 			List<String> lines = FileUtils.readLines(rubyFile);
 			for(int i = 0; i < lines.size(); i++) {
 				String line = lines.get(i);
@@ -130,6 +128,8 @@ public class Main {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 		String formattedDate = sdf.format(date);
 		
+		File outputDir = new File("output");
+		outputDir.mkdir();
 		String filename = "output/interfaces-"+formattedDate+".html";
 		File fout = new File(filename);
 		FileOutputStream fos = new FileOutputStream(fout);
@@ -157,7 +157,7 @@ public class Main {
 		bw.write("</html>");
 		bw.close();
 		
-		Desktop.getDesktop().open(new File(filename));
+		//Desktop.getDesktop().open(new File(filename));
 	}
 
 
@@ -168,6 +168,8 @@ public class Main {
 			System.out.println(string);
 		}				
 	}
+	
+	private static String basePath;
 }
 
 
