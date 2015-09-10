@@ -130,34 +130,21 @@ public class Main {
 		
 		File outputDir = new File("output");
 		outputDir.mkdir();
-		String filename = "output/interfaces-"+formattedDate+".html";
+		String filename = "output/interfaces-"+formattedDate+".csv";
 		File fout = new File(filename);
 		FileOutputStream fos = new FileOutputStream(fout);
 
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
 
-		bw.write("<!DOCTYPE html>");
-		bw.write("<html lang=\"en\"");
-		bw.write("<head>");
-		bw.write("<meta charset=\"utf-8\">");
-
-		bw.write("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-		bw.write("<title>Interfaces</title>");
-		bw.write("<style>body {font-weight:bold; font-size: 1.2em; } div,td{padding: 8px;} table tr:nth-child(even) td{ background-color:#dddddd;}</style>");
-
-		bw.write("</head>");
-		bw.write("<body><table><tr><td>Interface Name</td><td>File Name</td><td>Line Number</td></tr>");
+		bw.write("Interface,File,Line");
+		bw.newLine();
 		for (int i=0; i< matches.size(); i++) {
 			InterfaceImplementation match = matches.get(i);
-			bw.write(match.getHtml());
+			bw.write(match.getCsv());
 			bw.newLine();
 		}
 
-		bw.write("</table></body>");
-		bw.write("</html>");
 		bw.close();
-		
-		//Desktop.getDesktop().open(new File(filename));
 	}
 
 

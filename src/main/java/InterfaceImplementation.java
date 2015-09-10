@@ -64,6 +64,9 @@ public class InterfaceImplementation implements Comparable<InterfaceImplementati
 	private static boolean mIsEpic(String Usage) {
 		return Usage.indexOf(mEpicString) >= 0;
 	}
+	public String getCsv() {
+	  return getCleanName() + "," + FileName + "," + LineNumber;
+  }
 	public String getHtml() {
 		return getRow(getCol(getCleanName())+getCol(FileName)+getCol(LineNumber));
 	}
