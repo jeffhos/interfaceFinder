@@ -3,7 +3,7 @@ Parses a particular codebase for Epic service references and produces a badly fo
 
 ## To build
 ```
-gradle build
+./gradlew build
 ```
 
 ## To run
